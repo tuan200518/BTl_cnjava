@@ -11,11 +11,15 @@ import java.util.ArrayList;
 public class SendPayrollDialog extends JDialog {
     private final JTable table = Ui.table(new String[]{"ID","Mã NV","Nhân viên","Tháng","Năm","Lương CB","OT","Thưởng","Khấu trừ","Thực lĩnh","Trạng thái"});
     private final JTextField search = new JTextField(18);
-    private final JComboBox<String> year = new JComboBox<>(new String[]{"Tất cả 5 năm","2022","2023","2024","2025","2026"});
+    private final JComboBox<String> year;
     private final PayrollService service = new PayrollService();
 
-    public SendPayrollDialog(Window owner) {
+    public SendPayrollDialog(Window owner) { this(owner, false); }
+
+    public SendPayrollDialog(Window owner, boolean accountantMode) {
         super(owner,"Gửi phiếu lương",ModalityType.APPLICATION_MODAL);
+        year = new JComboBox<>(accountantMode ? new String[]{"2022","2023","2024","2025","2026"} : new String[]{"Tất cả 5 năm","2022","2023","2024","2025","2026"});
+        if(accountantMode) year.setSelectedItem("2026");
         setSize(1120,620); setLocationRelativeTo(owner); setLayout(new BorderLayout(8,8));
         add(Ui.top("Gửi phiếu lương - Kiểm tra phiếu DRAFT trước khi gửi"),BorderLayout.NORTH);
 

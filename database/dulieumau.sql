@@ -5,7 +5,7 @@ USE hrm_enterprise_db;
 CREATE TABLE departments(department_id INT AUTO_INCREMENT PRIMARY KEY,department_name VARCHAR(150) NOT NULL,created_at DATE NOT NULL);
 CREATE TABLE jobs(job_id INT AUTO_INCREMENT PRIMARY KEY,department_id INT NOT NULL,job_title VARCHAR(150) NOT NULL,base_salary_min DECIMAL(15,2) NOT NULL,base_salary_max DECIMAL(15,2) NOT NULL,target_headcount INT NOT NULL,FOREIGN KEY(department_id) REFERENCES departments(department_id));
 CREATE TABLE projects(project_id INT AUTO_INCREMENT PRIMARY KEY,project_name VARCHAR(180) NOT NULL,required_headcount INT NOT NULL,start_date DATE,status VARCHAR(30) NOT NULL);
-CREATE TABLE employees(employee_id INT PRIMARY KEY,job_id INT NOT NULL,department_id INT NOT NULL,full_name VARCHAR(180) NOT NULL,email VARCHAR(180) UNIQUE NOT NULL,base_salary DECIMAL(15,2) NOT NULL,hire_date DATE NOT NULL,resignation_date DATE,status ENUM('ACTIVE','RESIGNED') NOT NULL,FOREIGN KEY(job_id) REFERENCES jobs(job_id),FOREIGN KEY(department_id) REFERENCES departments(department_id),INDEX idx_hire_year(hire_date),INDEX idx_status(status));
+CREATE TABLE employees(employee_id INT PRIMARY KEY,job_id INT NOT NULL,department_id INT NOT NULL,full_name VARCHAR(180) NOT NULL,email VARCHAR(180) UNIQUE NOT NULL,base_salary DECIMAL(15,2) NOT NULL,hire_date DATE NOT NULL,resignation_date DATE,status ENUM('ACTIVE','RESIGNED') NOT NULL,dependent_count INT NOT NULL DEFAULT 0,FOREIGN KEY(job_id) REFERENCES jobs(job_id),FOREIGN KEY(department_id) REFERENCES departments(department_id),INDEX idx_hire_year(hire_date),INDEX idx_status(status));
 CREATE TABLE employment_events(event_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_id INT NOT NULL,event_type ENUM('JOIN','REWARD','DISCIPLINE','LEAVE','PROMOTION','SALARY_RAISE','OVERTIME','RESIGN') NOT NULL,event_date DATE NOT NULL,description VARCHAR(500),FOREIGN KEY(employee_id) REFERENCES employees(employee_id),INDEX idx_event_year(event_date));
 CREATE TABLE rewards_disciplines(record_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_id INT NOT NULL,type ENUM('REWARD','DISCIPLINE') NOT NULL,amount DECIMAL(15,2) DEFAULT 0,reason VARCHAR(300),record_date DATE NOT NULL,FOREIGN KEY(employee_id) REFERENCES employees(employee_id));
 CREATE TABLE attendance_records(attendance_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_id INT NOT NULL,work_date DATE NOT NULL,work_days DECIMAL(5,2) NOT NULL DEFAULT 1,check_in TIME,check_out TIME,status ENUM('PRESENT','LEAVE','ABSENT') NOT NULL DEFAULT 'PRESENT',FOREIGN KEY(employee_id) REFERENCES employees(employee_id),UNIQUE KEY uk_attendance(employee_id,work_date));
@@ -13,7 +13,7 @@ CREATE TABLE leave_records(leave_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_i
 CREATE TABLE overtime_records(ot_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_id INT NOT NULL,work_date DATE NOT NULL,hours DECIMAL(6,2) NOT NULL,hourly_rate DECIMAL(15,2) NOT NULL,multiplier DECIMAL(4,2) DEFAULT 1.5,FOREIGN KEY(employee_id) REFERENCES employees(employee_id),INDEX idx_ot_date(work_date));
 CREATE TABLE payrolls(payroll_id BIGINT AUTO_INCREMENT PRIMARY KEY,employee_id INT NOT NULL,pay_month INT NOT NULL,pay_year INT NOT NULL,base_salary DECIMAL(15,2) NOT NULL,overtime_pay DECIMAL(15,2) NOT NULL,bonus DECIMAL(15,2) NOT NULL,deduction DECIMAL(15,2) NOT NULL,net_salary DECIMAL(15,2) NOT NULL,status ENUM('DRAFT','SENT') NOT NULL DEFAULT 'DRAFT',created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,sent_at TIMESTAMP NULL,UNIQUE KEY uk_emp_month(employee_id,pay_month,pay_year),FOREIGN KEY(employee_id) REFERENCES employees(employee_id));
 CREATE TABLE project_allocations(allocation_id BIGINT AUTO_INCREMENT PRIMARY KEY,project_id INT NOT NULL,employee_id INT NOT NULL,role_in_project VARCHAR(120),assigned_date DATE,UNIQUE KEY uk_project_employee(project_id,employee_id),FOREIGN KEY(project_id) REFERENCES projects(project_id),FOREIGN KEY(employee_id) REFERENCES employees(employee_id));
-CREATE TABLE users(user_id INT AUTO_INCREMENT PRIMARY KEY,employee_id INT UNIQUE NULL,username VARCHAR(80) UNIQUE NOT NULL,password_hash VARCHAR(255) NOT NULL,role ENUM('ADMIN','HR','EMPLOYEE') NOT NULL,is_active BOOLEAN NOT NULL DEFAULT TRUE,FOREIGN KEY(employee_id) REFERENCES employees(employee_id));
+CREATE TABLE users(user_id INT AUTO_INCREMENT PRIMARY KEY,employee_id INT UNIQUE NULL,username VARCHAR(80) UNIQUE NOT NULL,password_hash VARCHAR(255) NOT NULL,role ENUM('ADMIN','HR','ACCOUNTANT','EMPLOYEE') NOT NULL,is_active BOOLEAN NOT NULL DEFAULT TRUE,FOREIGN KEY(employee_id) REFERENCES employees(employee_id));
 CREATE TABLE system_logs(log_id BIGINT AUTO_INCREMENT PRIMARY KEY,username VARCHAR(80) NOT NULL,action_type VARCHAR(100) NOT NULL,details TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 INSERT INTO departments(department_id,department_name,created_at) VALUES
@@ -37,7 +37,7 @@ BEGIN
      ELT(1+MOD(i*7,30),'An','Anh','Bình','Châu','Dũng','Hải','Hạnh','Hiếu','Hùng','Hương','Khang','Khoa','Khôi','Lan','Linh','Long','Mai','Minh','Nam','Nga','Ngân','Phúc','Quân','Sơn','Trang','Trung','Tuấn','Uyên','Vy','Yến'));
    SET email=CONCAT('NV',LPAD(i,4,'0'),'@gmail.com');
    SELECT base_salary_min + RAND()*(base_salary_max-base_salary_min) INTO sal FROM jobs WHERE job_id=j;
-   INSERT INTO employees VALUES(i,j,d,fn,email,sal,hd,rd,st);
+   INSERT INTO employees(employee_id,job_id,department_id,full_name,email,base_salary,hire_date,resignation_date,status,dependent_count) VALUES(i,j,d,fn,email,sal,hd,rd,st,CASE WHEN MOD(i,20)<10 THEN 0 WHEN MOD(i,20)<16 THEN 1 WHEN MOD(i,20)<19 THEN 2 ELSE 3 END);
    INSERT INTO employment_events(employee_id,event_type,event_date,description) VALUES(i,'JOIN',hd,'Nhân viên gia nhập công ty');
    IF MOD(i,5)=0 THEN INSERT INTO employment_events(employee_id,event_type,event_date,description) VALUES(i,'REWARD',DATE_ADD(hd,INTERVAL 250 DAY),'Được thưởng do hoàn thành tốt công việc'); INSERT INTO rewards_disciplines(employee_id,type,amount,reason,record_date) VALUES(i,'REWARD',1000000+MOD(i,8)*500000,'Hoàn thành KPI',DATE_ADD(hd,INTERVAL 250 DAY)); END IF;
    IF MOD(i,6)=0 THEN INSERT INTO employment_events(employee_id,event_type,event_date,description) VALUES(i,'PROMOTION',DATE_ADD(hd,INTERVAL 360 DAY),'Được thăng cấp theo đánh giá hiệu suất'); END IF;
@@ -61,9 +61,25 @@ INSERT INTO employment_events(employee_id,event_type,event_date,description)
 SELECT employee_id,'LEAVE',start_date,'Nghỉ phép' FROM leave_records;
 
 -- Phân bổ nhân viên hiện tại vào dự án, không vượt số lượng cần.
+-- Phân bổ mẫu theo nhiều mức độ thiếu nhân sự: tất cả dự án đều có thành viên nhưng chưa dự án nào đủ định biên.
+-- Mỗi nhân viên mẫu được đưa vào tối đa một dự án ở dữ liệu ban đầu; có thể phân công thêm qua giao diện.
 INSERT INTO project_allocations(project_id,employee_id,role_in_project,assigned_date)
-SELECT MOD(e.employee_id-1,12)+1,e.employee_id,j.job_title,e.hire_date
-FROM employees e JOIN jobs j ON j.job_id=e.job_id WHERE e.status='ACTIVE' AND MOD(e.employee_id,3)<>0;
+SELECT CASE
+ WHEN MOD(e.employee_id,100) BETWEEN 0 AND 4 THEN 1
+ WHEN MOD(e.employee_id,100) BETWEEN 5 AND 7 THEN 2
+ WHEN MOD(e.employee_id,100) BETWEEN 8 AND 11 THEN 3
+ WHEN MOD(e.employee_id,100) BETWEEN 12 AND 13 THEN 4
+ WHEN MOD(e.employee_id,100) BETWEEN 14 AND 16 THEN 5
+ WHEN MOD(e.employee_id,100) BETWEEN 17 AND 21 THEN 6
+ WHEN MOD(e.employee_id,100)=22 THEN 7
+ WHEN MOD(e.employee_id,100) BETWEEN 23 AND 24 THEN 8
+ WHEN MOD(e.employee_id,100) BETWEEN 25 AND 26 THEN 9
+ WHEN MOD(e.employee_id,100) BETWEEN 27 AND 31 THEN 10
+ WHEN MOD(e.employee_id,100) BETWEEN 32 AND 34 THEN 11
+ WHEN MOD(e.employee_id,100) BETWEEN 35 AND 37 THEN 12 END,
+ e.employee_id,j.job_title,e.hire_date
+FROM employees e JOIN jobs j ON j.job_id=e.job_id
+WHERE e.status='ACTIVE' AND MOD(e.employee_id,100) BETWEEN 0 AND 37;
 
 -- Tài khoản hệ thống và tài khoản riêng cho từng nhân viên.
 -- ADMIN: admin_sys / 123456; HR: hr_manager / 123456; NV0001..NV2500 / 123456.
@@ -71,6 +87,7 @@ FROM employees e JOIN jobs j ON j.job_id=e.job_id WHERE e.status='ACTIVE' AND MO
 INSERT INTO users(employee_id,username,password_hash,role) VALUES
 (NULL,'admin_sys','PBKDF2$120000$400v855prkxxl6741wEwEA==$db0VtytIOdns+yyiZ/mdyn8TOp7aDXWPAqDnKltU9ic=','ADMIN'),
 (NULL,'hr_manager','PBKDF2$120000$4kLtbQPQh7stT2emOqXl+A==$DXiI0h109AAfjWJgEWJDhh8167EpN3gk45LphPMPF54=','HR'),
+(NULL,'ke_toan_truong','PBKDF2$120000$bQIvR7J6DzBsuSs1JSiwHQ==$0R9oHusRNkGcOYZ860J7dof8O6EGO7IqR20Iw6bt6Gw=','ACCOUNTANT'),
 (1,'NV0001','PBKDF2$120000$PbWOKZD43AYIJV68unhObQ==$dCvhCWQXTgdvH6HTgdi2c4yxX4hah6NwnAgEisz/DwA=','EMPLOYEE'),
 (2,'NV0002','PBKDF2$120000$PbWOKZD43AYIJV68unhObQ==$dCvhCWQXTgdvH6HTgdi2c4yxX4hah6NwnAgEisz/DwA=','EMPLOYEE'),
 (3,'NV0003','PBKDF2$120000$PbWOKZD43AYIJV68unhObQ==$dCvhCWQXTgdvH6HTgdi2c4yxX4hah6NwnAgEisz/DwA=','EMPLOYEE'),
@@ -2611,6 +2628,21 @@ WHERE DATE_ADD(e.hire_date,INTERVAL x.n MONTH)<=COALESCE(e.resignation_date,'202
   AND YEAR(DATE_ADD(e.hire_date,INTERVAL x.n MONTH)) BETWEEN 2022 AND 2026;
 
 -- Các phiếu SENT của dữ liệu mẫu được xem như đã gửi/đã trả, dùng cho Dashboard.
+
+-- Cập nhật phiếu lương mẫu theo công thức 2026: BH bắt buộc 10,5%, giảm trừ gia cảnh và PIT lũy tiến.
+UPDATE payrolls p JOIN employees e ON e.employee_id=p.employee_id
+SET p.deduction=COALESCE((SELECT SUM(r.amount) FROM rewards_disciplines r WHERE r.employee_id=e.employee_id AND r.type='DISCIPLINE' AND MONTH(r.record_date)=p.pay_month AND YEAR(r.record_date)=p.pay_year),0),
+    p.net_salary=GREATEST(0,
+      (p.base_salary+p.overtime_pay+p.bonus) - (p.base_salary*0.105) -
+      CASE
+        WHEN GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)<=10000000 THEN GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)*0.05
+        WHEN GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)<=30000000 THEN 500000+(GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)-10000000)*0.10
+        WHEN GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)<=60000000 THEN 2500000+(GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)-30000000)*0.20
+        WHEN GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)<=100000000 THEN 8500000+(GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)-60000000)*0.30
+        ELSE 20500000+(GREATEST(0,(p.base_salary+p.overtime_pay+p.bonus)-(p.base_salary*0.105)-15500000-COALESCE(e.dependent_count,0)*6200000)-100000000)*0.35
+      END - p.deduction)
+WHERE p.payroll_id > 0;
+
 UPDATE payrolls
 SET sent_at = created_at
 WHERE payroll_id > 0 AND status='SENT' AND sent_at IS NULL;
