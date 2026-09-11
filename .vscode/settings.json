@@ -1,6 +1,12 @@
 {
-    "java.project.sourcePaths": [
-        "src"
-    ],
-    "java.configuration.updateBuildConfiguration": "automatic"
+  "java.project.sourcePaths": [
+    "src/main/java"
+  ],
+  "java.project.outputPath": "bin",
+  "java.project.referencedLibraries": [
+    "target/hrm-desktop-2.0.0.jar"
+  ],
+  "java.configuration.updateBuildConfiguration": "disabled",
+  "java.autobuild.enabled": false,
+  "java.compile.nullAnalysis.mode": "disabled"
 }
