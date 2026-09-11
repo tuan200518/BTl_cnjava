@@ -1,0 +1,44 @@
+package com.hrm.service;
+
+import com.hrm.dao.AssignmentDAO;
+import java.util.List;
+
+public class AssignmentService {
+    private final AssignmentDAO dao = new AssignmentDAO();
+
+    public List<String[]> employees(String q, String d, String j, String p, String s) throws Exception {
+        return dao.employees(q, d, j, p, s);
+    }
+
+    public List<String[]> employees() throws Exception {
+        return dao.employees();
+    }
+
+    public List<String[]> departments() throws Exception {
+        return dao.departments();
+    }
+
+    public List<String[]> jobs() throws Exception {
+        return dao.jobs();
+    }
+
+    public List<String[]> projects() throws Exception {
+        return dao.projects();
+    }
+
+    public void assignJob(int e, int j) throws Exception {
+        dao.assignJob(e, j);
+    }
+
+    public void assignProject(int e, int p, String role) throws Exception {
+        dao.assignProject(e, p, role);
+    }
+
+    public java.util.List<String[]> projectAssignments(int e) throws Exception {
+        return dao.projectAssignments(e);
+    }
+
+    public void removeProject(int e, int p) throws Exception {
+        dao.removeProject(e, p);
+    }
+}

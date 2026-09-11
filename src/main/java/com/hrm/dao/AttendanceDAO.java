@@ -1,0 +1,33 @@
+package com.hrm.dao;
+
+import com.hrm.config.DBConnection;
+import java.sql.*;
+import java.util.*;
+
+public class AttendanceDAO {
+    public List<String[]> find(int year, String text) throws SQLException {
+        List<String[]> a = new ArrayList<>();
+        String q = "SELECT CONCAT('NV',LPAD(e.employee_id,4,'0')),e.full_name,COUNT(ar.attendance_id),COALESCE(SUM(ar.work_days),0),COALESCE((SELECT SUM(o.hours) FROM overtime_records o WHERE o.employee_id=e.employee_id AND (?=0 OR YEAR(o.work_date)=?)),0) FROM employees e LEFT JOIN attendance_records ar ON ar.employee_id=e.employee_id AND (?=0 OR YEAR(ar.work_date)=?) WHERE (?='' OR e.full_name LIKE ? OR CONCAT('NV',LPAD(e.employee_id,4,'0')) LIKE ? OR e.email LIKE ?) GROUP BY e.employee_id,e.full_name ORDER BY e.employee_id";
+        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(q)) {
+            int i = 1;
+            p.setInt(i++, year);
+            p.setInt(i++, year);
+            p.setInt(i++, year);
+            p.setInt(i++, year);
+            p.setString(i++, text);
+            p.setString(i++, "%" + text + "%");
+            p.setString(i++, "%" + text + "%");
+            p.setString(i++, "%" + text + "%");
+            try (ResultSet rs = p.executeQuery()) {
+                while (rs.next())
+                    a.add(new String[] { rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4),
+                            rs.getString(5) });
+            }
+        }
+        return a;
+    }
+
+    public List<String[]> find(int year) throws SQLException {
+        return find(year, "");
+    }
+}

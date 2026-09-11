@@ -1,0 +1,21 @@
+@startuml
+skinparam classAttributeIconSize 0
+class Employee { +employeeId: int +fullName: String +email: String +hireDate: LocalDate +resignationDate: LocalDate +status: String }
+class Department { +departmentId: int +departmentName: String }
+class Job { +jobId: int +jobTitle: String +targetHeadcount: int +baseSalaryMin: double +baseSalaryMax: double }
+class Project { +projectId: int +projectName: String +requiredHeadcount: int }
+class ProjectAllocation { +allocationId: long +roleInProject: String +assignedDate: LocalDate }
+class Payroll { +payrollId: long +month: int +year: int +baseSalary: double +overtimePay: double +bonus: double +deduction: double +netSalary: double +status: String }
+class EmploymentEvent { +eventId: long +eventType: String +eventDate: LocalDate +description: String }
+class User { +userId: int +username: String +passwordHash: String +role: Role }
+enum Role { ADMIN HR EMPLOYEE }
+Department "1" -- "*" Employee
+Department "1" -- "*" Job
+Job "1" -- "*" Employee
+Employee "1" -- "*" Payroll
+Employee "1" -- "*" EmploymentEvent
+Employee "1" -- "*" ProjectAllocation
+Project "1" -- "*" ProjectAllocation
+Employee "0..1" -- "1" User
+User --> Role
+@enduml
