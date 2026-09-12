@@ -10,12 +10,6 @@ public final class DBConnection {
     private static final Properties P = new Properties();
     static {
         try (InputStream in = DBConnection.class.getClassLoader().getResourceAsStream("application.properties")) {
-<<<<<<< HEAD
-            if (in != null) P.load(in);
-        } catch (Exception e) { throw new ExceptionInInitializerError(e); }
-    }
-    private DBConnection() {}
-=======
             if (in != null)
                 P.load(in);
         } catch (Exception e) {
@@ -26,7 +20,6 @@ public final class DBConnection {
     private DBConnection() {
     }
 
->>>>>>> c888654e27fb43d1b0002d042a50270e736e50b5
     public static Connection getConnection() throws SQLException {
         String url = System.getProperty("db.url", P.getProperty("db.url"));
         String user = System.getProperty("db.user", P.getProperty("db.user", "root"));

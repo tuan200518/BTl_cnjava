@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-package com.hrm.gui; import com.hrm.service.ReportService; import javax.swing.*;import java.awt.*;
-public class DashboardPanel extends JPanel{private final JLabel l=new JLabel("Đang tải...");public DashboardPanel(){setLayout(new BorderLayout(10,10));add(Ui.top("Tổng quan hệ thống"),BorderLayout.NORTH);l.setHorizontalAlignment(SwingConstants.CENTER);l.setFont(l.getFont().deriveFont(18f));add(l,BorderLayout.CENTER);new SwingWorker<String,Void>(){protected String doInBackground()throws Exception{ReportService r=new ReportService();return "Nhân viên: "+r.count("employees")+"     Phòng ban: "+r.count("departments")+"     Dự án: "+r.count("projects")+"     Tổng lương đã trả: "+String.format("%,.0f",r.totalPaid(0))+" VNĐ";}protected void done(){try{l.setText(get());}catch(Exception e){l.setText(e.getMessage());}}}.execute();}}
-=======
 package com.hrm.gui;
 
 import com.hrm.service.ReportService;
@@ -497,4 +493,3 @@ public class DashboardPanel extends JPanel {
         }
     }
 }
->>>>>>> c888654e27fb43d1b0002d042a50270e736e50b5

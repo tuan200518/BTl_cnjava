@@ -1,8 +1,4 @@
 package com.hrm.gui;
-<<<<<<< HEAD
-import javax.swing.*;import java.awt.*;import java.util.*;
-public final class Ui {private Ui(){} public static JButton btn(String s){JButton b=new JButton(s);b.setFocusPainted(false);return b;} public static JPanel top(String title){JPanel p=new JPanel(new BorderLayout());p.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));JLabel l=new JLabel(title);l.setFont(l.getFont().deriveFont(Font.BOLD,20f));p.add(l,BorderLayout.WEST);return p;} public static void error(Component c,Exception e){JOptionPane.showMessageDialog(c,e.getMessage(),"Lỗi",JOptionPane.ERROR_MESSAGE);} public static JTable table(String[] h){return new JTable(new javax.swing.table.DefaultTableModel(h,0){public boolean isCellEditable(int r,int c){return false;}});} public static void fill(JTable t,java.util.List<String[]> rows){var m=(javax.swing.table.DefaultTableModel)t.getModel();m.setRowCount(0);for(String[] r:rows)m.addRow(r);} }
-=======
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -427,4 +423,3 @@ public final class Ui {
         d.setResizable(true);
     }
 }
->>>>>>> c888654e27fb43d1b0002d042a50270e736e50b5
