@@ -61,4 +61,5 @@ com\hrm\gui\StaffingPanel.class
 com\hrm\Main.class
 com\hrm\gui\HRHistoryPanel.class
 com\hrm\gui\Ui.class
+com\hrm\gui\MyAttendancePanel.class
 com\hrm\service\AuthService.class

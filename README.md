@@ -36,3 +36,30 @@ Tài khoản demo:
 - HR có thể tạo dự án mới trực tiếp trong tab Dự án.
 - Dữ liệu mẫu dự án được phân bổ theo nhiều mức thiếu nhân sự, tránh tình trạng dự án 0 người hoặc tất cả đều đủ.
 - Nếu đã có database cũ, chạy `database/patch_hrm_features.sql` để làm lại dữ liệu phân công dự án mà không phải xóa toàn bộ database.
+
+
+## Cập nhật tích hợp chấm công và database doanh nghiệp
+- Nhân viên có tab **Chấm công của tôi**, chấm vào/ra và xem lịch sử cá nhân.
+- Mức phạt được tính theo từng bản ghi: vào sau 07:30 = 100.000 VNĐ; ra trước 15:30 = 100.000 VNĐ.
+- HR xem thống kê tổng hợp và tiền phạt; kế toán không có màn hình chỉnh sửa chấm công.
+- Câu UPDATE payroll mẫu giữ nguyên công thức cũ, chỉ thêm `WHERE p.payroll_id > 0` để tương thích Safe Update Mode.
+- `database/upgrade_company_operations.sql`: bổ sung bảng hợp đồng, lịch sử lương, nghỉ phép, đào tạo, đánh giá, phúc lợi và audit chấm công; không xóa dữ liệu.
+- `database/optional_generate_attendance_history.sql`: thủ tục tạo chấm công mô phỏng theo ngày làm việc. Không tự chạy; chỉ gọi thủ tục nếu muốn tạo lượng lớn dữ liệu mẫu.
+
+### Chạy với database đã có
+1. Sao lưu database.
+2. Chạy `database/upgrade_company_operations.sql`.
+3. Không chạy lại file `dulieumau.sql` nếu không muốn DROP và tạo lại database.
+4. Mở project chứa `pom.xml`; cần JDK 21 và Maven, chạy `mvn clean package`.
+
+
+## Chức năng OT tự động khi chấm công ra muộn
+
+- Giờ kết thúc ca chuẩn: **15:30**.
+- Khi nhân viên chấm công ra sau 15:30, hệ thống tự tính OT theo công thức:
+  `OT (giờ) = (Giờ ra - 15:30)`.
+- Ví dụ: 16:00 = 0,50 giờ OT; 17:00 = 1,50 giờ OT.
+- Hệ thống tự tạo/cập nhật bản ghi trong `overtime_records` với đơn giá `lương cơ bản / 26 / 8` và hệ số 1,5.
+- OT được cộng vào phần tính lương thông qua `PayrollDAO`.
+- Lịch sử chấm công của nhân viên hiển thị thêm cột **OT (giờ)**.
+- Nếu database đã được tạo từ phiên bản cũ, chạy `database/nangcap_overtime_tu_dong.sql` một lần trước khi chạy ứng dụng.

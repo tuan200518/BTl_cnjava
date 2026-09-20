@@ -6,7 +6,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class AttendancePanel extends JPanel {
-    private final JTable t = Ui.table(new String[] { "Mã NV", "Nhân viên", "Số bản ghi", "Ngày công", "Giờ OT" });
+    private final JTable t = Ui.table(new String[] { "Mã NV", "Nhân viên", "Số bản ghi", "Ngày công", "Giờ OT", "Phạt đi muộn", "Phạt về sớm", "Tổng phạt" });
     private final JComboBox<String> y = new JComboBox<>(
             new String[] { "Tất cả 5 năm", "2022", "2023", "2024", "2025", "2026" });
     private final JTextField q = new JTextField(18);

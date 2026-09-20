@@ -82,12 +82,12 @@ public class MainFrame extends JFrame {
             addMenu("Phiếu lương", "payroll", new HRPayrollPanel(false));
         } else if (s.isAccountant()) {
             addMenu("Tổng quan", "dashboard", new DashboardPanel());
-            addMenu("Chấm công", "attendance", new AttendancePanel());
             addMenu("Sự kiện nhân sự", "events", new HRHistoryPanel(false));
             addMenu("Phiếu lương", "payroll", new HRPayrollPanel(true));
         } else if (s.isEmployee()) {
             addMenu("Tổng quan cá nhân", "home", new EmployeeHomePanel(s.employeeId()));
             addMenu("Phiếu lương của tôi", "mypayslip", new MyPayslipPanel(s.employeeId()));
+            addMenu("Chấm công của tôi", "myattendance", new MyAttendancePanel(s.employeeId()));
         } else if (s.isAdmin()) {
             addMenu("Quản trị hệ thống", "maintenance", new MaintenancePanel());
         }

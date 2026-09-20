@@ -8,5 +8,6 @@
   ],
   "java.configuration.updateBuildConfiguration": "disabled",
   "java.autobuild.enabled": false,
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "java.debug.settings.onBuildFailureProceed": true
 }
