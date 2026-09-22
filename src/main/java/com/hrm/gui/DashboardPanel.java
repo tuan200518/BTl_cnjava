@@ -12,10 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Dashboard tổng quan.
- * Chỉ sử dụng ReportService hiện có; không thay đổi backend.
- */
 public class DashboardPanel extends JPanel {
 
     private final StatCard employees = new StatCard("Tổng nhân viên", "NV", Ui.PRIMARY);
