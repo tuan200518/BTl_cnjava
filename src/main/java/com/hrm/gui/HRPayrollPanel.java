@@ -2,6 +2,7 @@ package com.hrm.gui;
 
 import com.hrm.model.Payroll;
 import com.hrm.service.PayrollService;
+import com.hrm.util.CsvExporter;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class HRPayrollPanel extends JPanel {
     private final JComboBox<String> y;
     private final JComboBox<String> status = new JComboBox<>(new String[] { "Tất cả", "DRAFT", "SENT" });
     private final JButton create = Ui.primaryBtn("+ Tạo phiếu lương"), send = Ui.primaryBtn("Gửi phiếu lương"),
-            history = Ui.btn("Lịch sử phiếu lương"), detail = Ui.btn("Xem chi tiết");
+            history = Ui.btn("Lịch sử phiếu lương"), detail = Ui.btn("Xem chi tiết"), export = Ui.btn("Xuất Excel/CSV");
 
     public HRPayrollPanel() {
         this(false);
@@ -34,6 +35,7 @@ public class HRPayrollPanel extends JPanel {
         b.add(send);
         b.add(history);
         b.add(detail);
+        b.add(export);
         JPanel pageNorth = new JPanel(new BorderLayout());
         pageNorth.setBackground(Ui.BG);
         pageNorth.add(Ui.top("Phiếu lương",
@@ -53,6 +55,7 @@ public class HRPayrollPanel extends JPanel {
         history.addActionListener(
                 e -> new PayrollHistoryDialog(SwingUtilities.getWindowAncestor(this), accountantMode).setVisible(true));
         detail.addActionListener(e -> showDetail());
+        export.addActionListener(e -> CsvExporter.export(this, t, "bao_cao_phieu_luong.csv"));
         t.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2)

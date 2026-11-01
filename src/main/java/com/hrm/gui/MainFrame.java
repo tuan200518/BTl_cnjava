@@ -80,6 +80,8 @@ public class MainFrame extends JFrame {
             addMenu("Dự án", "projects", new ProjectPanel());
             addMenu("Phân công NV", "assignment", new AssignmentPanel());
             addMenu("Phiếu lương", "payroll", new HRPayrollPanel(false));
+            addMenu("Nghỉ phép", "leave", new LeavePanel(s));
+            addMenu("Hợp đồng lao động", "contracts", new ContractsPanel());
         } else if (s.isAccountant()) {
             addMenu("Tổng quan", "dashboard", new DashboardPanel());
             addMenu("Sự kiện nhân sự", "events", new HRHistoryPanel(false));
@@ -88,8 +90,11 @@ public class MainFrame extends JFrame {
             addMenu("Tổng quan cá nhân", "home", new EmployeeHomePanel(s.employeeId()));
             addMenu("Phiếu lương của tôi", "mypayslip", new MyPayslipPanel(s.employeeId()));
             addMenu("Chấm công của tôi", "myattendance", new MyAttendancePanel(s.employeeId()));
+            addMenu("Nghỉ phép của tôi", "leave", new LeavePanel(s));
         } else if (s.isAdmin()) {
             addMenu("Quản trị hệ thống", "maintenance", new MaintenancePanel());
+            addMenu("Nghỉ phép", "leave", new LeavePanel(s));
+            addMenu("Hợp đồng lao động", "contracts", new ContractsPanel());
         }
 
         JScrollPane menuScroll = new JScrollPane(menu);
@@ -124,6 +129,10 @@ public class MainFrame extends JFrame {
         user.add(Box.createVerticalStrut(3));
         user.add(role);
 
+        JButton changePassword = Ui.btn("Đổi mật khẩu");
+        changePassword.setPreferredSize(new Dimension(220, 40));
+        changePassword.addActionListener(e -> ChangePasswordDialog.show(this, s));
+
         JButton logout = new JButton("Đăng xuất");
         logout.setFocusPainted(false);
         logout.setBorderPainted(true);
@@ -151,7 +160,11 @@ public class MainFrame extends JFrame {
         });
 
         footer.add(user, BorderLayout.CENTER);
-        footer.add(logout, BorderLayout.SOUTH);
+        JPanel footerActions = new JPanel(new GridLayout(0, 1, 0, 6));
+        footerActions.setOpaque(false);
+        footerActions.add(changePassword);
+        footerActions.add(logout);
+        footer.add(footerActions, BorderLayout.SOUTH);
 
         side.add(footer, BorderLayout.SOUTH);
 

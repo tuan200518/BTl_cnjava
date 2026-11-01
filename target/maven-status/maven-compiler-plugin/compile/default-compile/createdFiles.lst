@@ -6,9 +6,12 @@ com\hrm\gui\DashboardPanel$DashboardContent.class
 com\hrm\model\Employee.class
 com\hrm\dao\AssignmentDAO.class
 com\hrm\gui\CreatePayrollDialog.class
+com\hrm\util\CsvExporter$1.class
 com\hrm\gui\Ui$WrapLayout.class
 com\hrm\dao\AttendanceDAO.class
 com\hrm\service\EmployeeService.class
+com\hrm\service\AccountService.class
+com\hrm\gui\LeavePanel.class
 com\hrm\dao\HistoryDAO.class
 com\hrm\gui\MaintenancePanel.class
 com\hrm\service\AttendanceService.class
@@ -22,8 +25,11 @@ com\hrm\gui\MainFrame$1.class
 com\hrm\service\PayrollCalculator.class
 com\hrm\gui\Ui$3.class
 com\hrm\dao\PayrollDAO.class
+com\hrm\util\CsvExporter.class
 com\hrm\service\HRHistoryService.class
 com\hrm\gui\AssignmentPanel.class
+com\hrm\gui\ChangePasswordDialog.class
+com\hrm\util\CsvExporter$ComponentParent.class
 com\hrm\gui\SendPayrollDialog.class
 com\hrm\gui\MainFrame.class
 com\hrm\service\ReportService.class
@@ -58,6 +64,7 @@ com\hrm\gui\ProjectPanel$1.class
 com\hrm\config\DBConnection.class
 com\hrm\gui\DashboardPanel$StaffingView.class
 com\hrm\gui\StaffingPanel.class
+com\hrm\gui\ContractsPanel.class
 com\hrm\Main.class
 com\hrm\gui\HRHistoryPanel.class
 com\hrm\gui\Ui.class

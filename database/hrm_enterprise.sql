@@ -2722,3 +2722,125 @@ SELECT attendance_id, employee_id, work_date, check_in, check_out,
  (CASE WHEN check_in > '07:30:00' THEN 100000 ELSE 0 END +
   CASE WHEN check_out < '15:30:00' THEN 100000 ELSE 0 END) total_penalty
 FROM attendance_records;
+
+-- ============================================================
+-- PHẦN 3: DỮ LIỆU MẪU CHO CÁC CHỨC NĂNG MỚI
+-- Dữ liệu được liên kết với employees/users hiện có; không tạo nhân viên giả rời rạc.
+-- Chỉ chạy sau khi phần tạo bảng và dữ liệu cũ ở trên đã hoàn tất.
+-- ============================================================
+USE hrm_enterprise_db;
+
+-- 3.1. Hợp đồng lao động: hợp đồng đang hiệu lực và một số hợp đồng lịch sử.
+INSERT INTO employee_contracts
+(employee_id, contract_no, contract_type, start_date, end_date, salary, status)
+SELECT e.employee_id, x.contract_no, x.contract_type, x.start_date, x.end_date, e.base_salary, x.status
+FROM employees e
+JOIN (
+  SELECT 1 employee_id,'HDLD-2024-0001' contract_no,'Xác định thời hạn 24 tháng' contract_type, DATE('2024-01-15') start_date, DATE('2026-01-14') end_date,'EXPIRED' status
+  UNION ALL SELECT 1,'HDLD-2026-0001','Xác định thời hạn 24 tháng',DATE('2026-01-15'),DATE('2028-01-14'),'ACTIVE'
+  UNION ALL SELECT 2,'HDLD-2025-0002','Xác định thời hạn 36 tháng',DATE('2025-03-01'),DATE('2028-02-29'),'ACTIVE'
+  UNION ALL SELECT 3,'HDLD-2026-0003','Thử việc',DATE('2026-07-01'),DATE('2026-08-31'),'TERMINATED'
+  UNION ALL SELECT 3,'HDLD-2026-0013','Xác định thời hạn 12 tháng',DATE('2026-09-01'),DATE('2027-08-31'),'ACTIVE'
+  UNION ALL SELECT 4,'HDLD-2025-0004','Xác định thời hạn 24 tháng',DATE('2025-06-01'),DATE('2027-05-31'),'ACTIVE'
+  UNION ALL SELECT 5,'HDLD-2026-0005','Không xác định thời hạn',DATE('2026-02-01'),NULL,'ACTIVE'
+  UNION ALL SELECT 6,'HDLD-2025-0006','Xác định thời hạn 24 tháng',DATE('2025-09-15'),DATE('2027-09-14'),'ACTIVE'
+  UNION ALL SELECT 8,'HDLD-2026-0008','Xác định thời hạn 12 tháng',DATE('2026-04-01'),DATE('2027-03-31'),'ACTIVE'
+  UNION ALL SELECT 9,'HDLD-2025-0009','Xác định thời hạn 24 tháng',DATE('2025-05-01'),DATE('2027-04-30'),'ACTIVE'
+  UNION ALL SELECT 10,'HDLD-2026-0010','Không xác định thời hạn',DATE('2026-01-10'),NULL,'ACTIVE'
+  UNION ALL SELECT 11,'HDLD-2026-0011','Xác định thời hạn 12 tháng',DATE('2026-03-01'),DATE('2027-02-28'),'ACTIVE'
+  UNION ALL SELECT 12,'HDLD-2025-0012','Xác định thời hạn 24 tháng',DATE('2025-11-01'),DATE('2027-10-31'),'ACTIVE'
+) x ON x.employee_id=e.employee_id
+WHERE e.status='ACTIVE';
+
+-- 3.2. Đơn nghỉ phép: nhiều trạng thái để kiểm thử nhân viên và HR.
+INSERT INTO leave_requests
+(employee_id, leave_type, start_date, end_date, total_days, reason, status, reviewed_by, reviewed_at)
+SELECT x.employee_id,x.leave_type,x.start_date,x.end_date,x.total_days,x.reason,x.status,x.reviewed_by,x.reviewed_at
+FROM (
+  SELECT 1 employee_id,'Nghỉ phép năm' leave_type,DATE('2026-11-10') start_date,DATE('2026-11-11') end_date,2.00 total_days,'Giải quyết việc gia đình' reason,'PENDING' status,NULL reviewed_by,NULL reviewed_at
+  UNION ALL SELECT 2,'Nghỉ việc riêng',DATE('2026-11-18'),DATE('2026-11-18'),1.00,'Có việc cá nhân','PENDING',NULL,NULL
+  UNION ALL SELECT 3,'Nghỉ phép năm',DATE('2026-10-12'),DATE('2026-10-13'),2.00,'Nghỉ phép đã lên kế hoạch','APPROVED','hr_manager',TIMESTAMP('2026-10-05 09:30:00')
+  UNION ALL SELECT 4,'Nghỉ ốm',DATE('2026-09-21'),DATE('2026-09-21'),1.00,'Khám sức khỏe','APPROVED','hr_manager',TIMESTAMP('2026-09-20 10:15:00')
+  UNION ALL SELECT 5,'Nghỉ phép năm',DATE('2026-12-03'),DATE('2026-12-04'),2.00,'Việc gia đình','PENDING',NULL,NULL
+  UNION ALL SELECT 6,'Nghỉ không lương',DATE('2026-08-14'),DATE('2026-08-14'),1.00,'Giải quyết công việc cá nhân','REJECTED','hr_manager',TIMESTAMP('2026-08-10 14:00:00')
+  UNION ALL SELECT 8,'Nghỉ phép năm',DATE('2026-07-06'),DATE('2026-07-08'),3.00,'Du lịch cá nhân','APPROVED','hr_manager',TIMESTAMP('2026-06-25 08:45:00')
+  UNION ALL SELECT 9,'Nghỉ việc riêng',DATE('2026-10-28'),DATE('2026-10-28'),1.00,'Việc riêng đột xuất','CANCELLED',NULL,NULL
+  UNION ALL SELECT 10,'Nghỉ phép năm',DATE('2026-11-23'),DATE('2026-11-24'),2.00,'Nghỉ phép cá nhân','PENDING',NULL,NULL
+  UNION ALL SELECT 11,'Nghỉ ốm',DATE('2026-09-02'),DATE('2026-09-03'),2.00,'Nghỉ ốm','APPROVED','hr_manager',TIMESTAMP('2026-09-02 08:00:00')
+  UNION ALL SELECT 12,'Nghỉ phép năm',DATE('2026-12-14'),DATE('2026-12-16'),3.00,'Nghỉ cuối năm','PENDING',NULL,NULL
+) x
+JOIN employees e ON e.employee_id=x.employee_id AND e.status='ACTIVE';
+
+-- 3.3. Lịch sử thay đổi lương, sử dụng mức lương hiện có của nhân viên.
+INSERT INTO salary_history(employee_id,old_salary,new_salary,effective_date,reason,approved_by)
+SELECT e.employee_id,ROUND(e.base_salary*0.90,2),e.base_salary,DATE_SUB(e.hire_date,INTERVAL -365 DAY),'Điều chỉnh lương định kỳ','admin_sys'
+FROM employees e WHERE e.status='ACTIVE' AND e.employee_id IN (1,2,3,4,5,6,8,9,10,11,12);
+
+-- 3.4. Khóa đào tạo mẫu.
+INSERT INTO training_courses(course_name,provider,start_date,end_date,budget,status) VALUES
+('Hội nhập nhân viên mới','Phòng Nhân sự','2026-09-05','2026-09-05',2500000,'COMPLETED'),
+('An toàn thông tin cơ bản','Phòng Công nghệ thông tin','2026-10-15','2026-10-16',8500000,'COMPLETED'),
+('Kỹ năng giao tiếp và làm việc nhóm','Đào tạo nội bộ','2026-11-12','2026-11-12',4000000,'PLANNED'),
+('Nâng cao kỹ năng chuyên môn','Đối tác đào tạo','2026-12-07','2026-12-09',15000000,'PLANNED');
+
+INSERT INTO training_participants(course_id,employee_id,result,completed_at)
+SELECT c.course_id,x.employee_id,x.result,x.completed_at
+FROM (
+  SELECT 1 course_id,1 employee_id,'Hoàn thành' result,DATE('2026-09-05') completed_at
+  UNION ALL SELECT 1,2,'Hoàn thành',DATE('2026-09-05')
+  UNION ALL SELECT 1,3,'Hoàn thành',DATE('2026-09-05')
+  UNION ALL SELECT 2,1,'Đạt',DATE('2026-10-16')
+  UNION ALL SELECT 2,4,'Đạt',DATE('2026-10-16')
+  UNION ALL SELECT 2,5,'Đạt',DATE('2026-10-16')
+  UNION ALL SELECT 3,2,NULL,NULL
+  UNION ALL SELECT 3,6,NULL,NULL
+  UNION ALL SELECT 3,8,NULL,NULL
+  UNION ALL SELECT 4,9,NULL,NULL
+  UNION ALL SELECT 4,10,NULL,NULL
+) x JOIN training_courses c ON c.course_id=x.course_id
+JOIN employees e ON e.employee_id=x.employee_id AND e.status='ACTIVE';
+
+-- 3.5. Đánh giá hiệu suất mẫu cho nhân viên đang làm việc.
+INSERT INTO performance_reviews(employee_id,period_start,period_end,score,reviewer,comments,improvement_plan)
+SELECT x.employee_id,x.period_start,x.period_end,x.score,x.reviewer,x.comments,x.improvement_plan
+FROM (
+  SELECT 1 employee_id,DATE('2026-01-01') period_start,DATE('2026-06-30') period_end,4.50 score,'hr_manager' reviewer,'Hoàn thành tốt mục tiêu công việc.' comments,'Tiếp tục nâng cao kỹ năng chuyên môn.' improvement_plan
+  UNION ALL SELECT 2,DATE('2026-01-01'),DATE('2026-06-30'),4.20,'hr_manager','Đảm bảo tiến độ và phối hợp tốt.','Cải thiện kỹ năng báo cáo.'
+  UNION ALL SELECT 3,DATE('2026-01-01'),DATE('2026-06-30'),3.60,'hr_manager','Hoàn thành phần lớn mục tiêu.','Chủ động cập nhật tiến độ công việc.'
+  UNION ALL SELECT 4,DATE('2026-01-01'),DATE('2026-06-30'),4.70,'admin_sys','Kết quả công việc nổi bật.','Có thể xem xét giao nhiệm vụ hướng dẫn nhân viên mới.'
+  UNION ALL SELECT 5,DATE('2026-01-01'),DATE('2026-06-30'),3.90,'hr_manager','Đáp ứng yêu cầu công việc.','Tăng cường phối hợp liên phòng ban.'
+) x JOIN employees e ON e.employee_id=x.employee_id AND e.status='ACTIVE';
+
+-- 3.6. Phúc lợi/phụ cấp mẫu.
+INSERT INTO employee_benefits(employee_id,benefit_type,amount,start_date,end_date,status,notes)
+SELECT x.employee_id,x.benefit_type,x.amount,x.start_date,x.end_date,x.status,x.notes
+FROM (
+  SELECT 1 employee_id,'Phụ cấp ăn trưa' benefit_type,730000.00 amount,DATE('2026-01-01') start_date,NULL end_date,'ACTIVE' status,'Áp dụng theo chính sách công ty' notes
+  UNION ALL SELECT 2,'Phụ cấp đi lại',500000.00,DATE('2026-01-01'),NULL,'ACTIVE','Phụ cấp hàng tháng'
+  UNION ALL SELECT 3,'Phụ cấp điện thoại',300000.00,DATE('2026-01-01'),NULL,'ACTIVE','Phục vụ công việc'
+  UNION ALL SELECT 4,'Bảo hiểm sức khỏe bổ sung',1200000.00,DATE('2026-01-01'),NULL,'ACTIVE','Gói phúc lợi năm'
+  UNION ALL SELECT 5,'Phụ cấp ăn trưa',730000.00,DATE('2026-01-01'),NULL,'ACTIVE','Áp dụng theo chính sách công ty'
+  UNION ALL SELECT 6,'Phụ cấp đi lại',500000.00,DATE('2026-01-01'),DATE('2026-06-30'),'INACTIVE','Đã kết thúc kỳ áp dụng'
+) x JOIN employees e ON e.employee_id=x.employee_id AND e.status='ACTIVE';
+
+-- 3.7. Nhật ký chỉnh sửa chấm công: liên kết đến bản ghi chấm công thật.
+INSERT INTO attendance_audit(attendance_id,employee_id,changed_by,change_type,old_check_in,new_check_in,old_check_out,new_check_out,changed_at,notes)
+SELECT a.attendance_id,a.employee_id,'hr_manager','HR_EDIT','08:15:00',a.check_in,'17:00:00',a.check_out,TIMESTAMP('2026-10-20 09:15:00'),'Điều chỉnh dữ liệu chấm công theo xác nhận của quản lý'
+FROM attendance_records a JOIN employees e ON e.employee_id=a.employee_id
+WHERE a.employee_id IN (1,2,3,4,5) ORDER BY a.employee_id LIMIT 5;
+
+-- 3.8. Nhật ký thao tác mẫu cho các chức năng mới.
+INSERT INTO system_logs(username,action_type,details,created_at) VALUES
+('hr_manager','SEED_LEAVE_REQUESTS','Khởi tạo dữ liệu mẫu cho chức năng quản lý và duyệt nghỉ phép',TIMESTAMP('2026-11-01 08:00:00')),
+('hr_manager','SEED_EMPLOYEE_CONTRACTS','Khởi tạo dữ liệu mẫu cho chức năng quản lý hợp đồng lao động',TIMESTAMP('2026-11-01 08:01:00')),
+('admin_sys','SEED_HRM_EXTENSIONS','Khởi tạo dữ liệu mẫu cho lịch sử lương, đào tạo, đánh giá và phúc lợi',TIMESTAMP('2026-11-01 08:02:00'));
+
+-- Kiểm tra nhanh số lượng dữ liệu mẫu sau khi import.
+SELECT 'employee_contracts' AS table_name, COUNT(*) AS sample_rows FROM employee_contracts
+UNION ALL SELECT 'leave_requests', COUNT(*) FROM leave_requests
+UNION ALL SELECT 'salary_history', COUNT(*) FROM salary_history
+UNION ALL SELECT 'training_courses', COUNT(*) FROM training_courses
+UNION ALL SELECT 'training_participants', COUNT(*) FROM training_participants
+UNION ALL SELECT 'performance_reviews', COUNT(*) FROM performance_reviews
+UNION ALL SELECT 'employee_benefits', COUNT(*) FROM employee_benefits
+UNION ALL SELECT 'attendance_audit', COUNT(*) FROM attendance_audit;

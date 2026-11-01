@@ -2,6 +2,7 @@ package com.hrm.gui;
 
 import com.hrm.model.Employee;
 import com.hrm.service.EmployeeService;
+import com.hrm.util.CsvExporter;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -18,7 +19,7 @@ public class EmployeePanel extends JPanel {
                         status = new JComboBox<>(new String[] { "Tất cả", "ACTIVE", "RESIGNED" });
         private final JButton add = Ui.primaryBtn("+ Thêm nhân viên"), edit = Ui.btn("Sửa thông tin"),
                         del = Ui.dangerBtn("Xóa nhân viên"), account = Ui.btn("Kích hoạt / Khóa"),
-                        refresh = Ui.btn("Làm mới");
+                        refresh = Ui.btn("Làm mới"), export = Ui.btn("Xuất Excel/CSV");
         private final EmployeeService service = new EmployeeService();
 
         public EmployeePanel() {
@@ -61,6 +62,7 @@ public class EmployeePanel extends JPanel {
                 actions.add(del);
                 actions.add(account);
                 actions.add(refresh);
+                actions.add(export);
 
                 JPanel north = new JPanel(new BorderLayout(0, 0));
                 north.setBackground(Ui.BG);
@@ -86,6 +88,7 @@ public class EmployeePanel extends JPanel {
                 status.addActionListener(e -> l.run());
                 q.addActionListener(e -> l.run());
                 refresh.addActionListener(e -> l.run());
+                export.addActionListener(e -> CsvExporter.export(this, t, "danh_sach_nhan_vien.csv"));
                 add.addActionListener(e -> showEditor(-1));
                 edit.addActionListener(e -> editSelected());
                 del.addActionListener(e -> deleteSelected());
